@@ -1,11 +1,69 @@
+# Unit Tests for Boat Engine Controller
 
-This directory is intended for PlatformIO Unit Testing and project tests.
+This directory contains comprehensive unit tests for the boat engine controller project.
 
-Unit Testing is a software testing method by which individual units of
-source code, sets of one or more MCU program modules together with associated
-control data, usage procedures, and operating procedures, are tested to
-determine whether they are fit for use. Unit testing finds problems early
-in the development cycle.
+## Test Structure
 
-More information about PlatformIO Unit Testing:
+### test_onewire_helper/
+Tests for the OneWire temperature sensor helper functions:
+- Configuration creation and validation
+- Different base names and sensor types
+- Read delay parameters
+- Sort order handling
+- Signal K path formats
+
+### test_main/
+Tests for constants and configuration in Main.cpp:
+- GPIO pin assignments and validation
+- Timing constants (RPM and temperature read delays)
+- Sensor configuration parameters
+- Sort order progression
+- Configuration path naming
+
+### test_integration/
+Integration tests verifying components work together:
+- OneWire bus sharing across sensors
+- Unique configuration paths
+- Signal K path specifications
+- Sort order spacing
+- Concurrent sensor operation
+- Sensor pipeline structure
+
+## Running Tests
+
+Run all tests:
+```bash
+pio test -e test
+```
+
+Run specific test suite:
+```bash
+pio test -e test -f test_onewire_helper
+pio test -e test -f test_main
+pio test -e test -f test_integration
+```
+
+Run tests on physical device:
+```bash
+pio test -e test --upload-port COM3
+```
+
+## Test Framework
+
+Tests use PlatformIO's Unity testing framework.
+
+More information:
 - https://docs.platformio.org/page/plus/unit-testing.html
+- https://github.com/ThrowTheSwitch/Unity
+
+## Coverage
+
+Current tests cover:
+✓ Hardware pin configuration
+✓ Timing constants validation
+✓ Sensor configuration parameters
+✓ OneWire helper function behavior
+✓ Signal K path conventions
+✓ Configuration path uniqueness
+✓ Integration between components
+✓ Concurrent operation feasibility
