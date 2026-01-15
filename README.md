@@ -1,0 +1,280 @@
+# Boat Engine Controller
+
+A comprehensive engine monitoring solution for marine vessels using ESP32 and the SensESP framework. This project monitors critical engine parameters including coolant temperature, seawater temperatures (intake/output), and engine RPM, transmitting data wirelessly to a Signal K server.
+
+## Features
+
+- **Temperature Monitoring**: Monitor multiple temperature points using Dallas DS18B20 OneWire sensors
+  - Engine coolant temperature
+  - Seawater intake temperature
+  - Seawater output temperature
+  - Configurable warning thresholds
+- **RPM Monitoring**: Track engine revolutions per minute using digital input counter
+- **Signal K Integration**: Seamless integration with Signal K marine data ecosystem
+- **WiFi Connectivity**: Wireless data transmission to your Signal K server
+- **Web Configuration**: Easy setup through web-based configuration portal
+- **Real-time Monitoring**: Continuous monitoring with configurable read intervals
+- **Over-the-Air Updates**: Support for OTA firmware updates
+
+## Hardware Requirements
+
+### Microcontroller
+- ESP32 development board (tested with AZ-Delivery DevKit v4)
+- Minimum 4MB flash memory
+
+### Sensors
+- **Temperature Sensors**: Dallas DS18B20 OneWire digital temperature sensors (1-3 sensors)
+  - Operating range: -55°C to +125°C
+  - 4.7kΩ pull-up resistor required on data line
+- **RPM Sensor**: Digital sensor with pulse output (e.g., hall effect sensor, optical sensor)
+
+### Connections
+- **OneWire Pin**: GPIO 25 (configurable in code)
+- **RPM Pin**: GPIO 16 (configurable in code)
+- **Power**: 5V via USB or external power supply
+
+### Circuit Diagram
+For detailed wiring information, see the [OneWire Temperature Example](examples/onewire_temperature/README.md).
+
+## Software Requirements
+
+- [PlatformIO](https://platformio.org/) (recommended) or Arduino IDE
+- [Visual Studio Code](https://code.visualstudio.com/) with PlatformIO extension (recommended)
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ihavn1/boat.engine-controller.git
+cd boat.engine-controller
+```
+
+### 2. Open in PlatformIO
+
+- Open Visual Studio Code
+- Install the PlatformIO IDE extension if not already installed
+- Open the project folder: `File -> Open Folder` and select the `boat.engine-controller` directory
+
+### 3. Configure Your Hardware
+
+Edit `src/Main.cpp` to match your hardware configuration:
+
+```cpp
+// Adjust GPIO pins if needed
+static constexpr uint8_t ONEWIRE_PIN = 25;
+static constexpr uint8_t RPM_PIN = 16;
+
+// Adjust read intervals (milliseconds)
+static constexpr unsigned int RPM_READ_DELAY_MS = 500;
+static constexpr unsigned int TEMPERATURE_READ_DELAY_MS = 2000;
+```
+
+### 4. Customize Temperature Sensors
+
+Modify the temperature sensor configuration in `src/Main.cpp`:
+
+```cpp
+// Example: Coolant temperature with warning thresholds
+add_onewire_temp(dts, temperature_read_delay, "coolantTemperature",
+         "propulsion.main.coolantTemperature",
+         "Coolant Temperature", 110, 120, 130);
+```
+
+Parameters:
+- `dts`: Dallas Temperature Sensors instance
+- `temperature_read_delay`: Read interval in milliseconds
+- `"coolantTemperature"`: Local identifier
+- `"propulsion.main.coolantTemperature"`: Signal K path
+- `"Coolant Temperature"`: Display name
+- `110, 120, 130`: Warning threshold values (optional)
+
+### 5. Build and Upload
+
+Using PlatformIO:
+1. Connect your ESP32 via USB
+2. Click the "Upload" button (→) in the PlatformIO toolbar
+3. Or use the command palette: `PlatformIO: Upload`
+
+Using command line:
+```bash
+pio run --target upload
+```
+
+## Configuration
+
+### First-Time Setup
+
+1. After uploading firmware, the device will create a WiFi access point named "Configure SensESP"
+2. Connect to this network using your phone or computer
+3. A configuration portal should open automatically (or navigate to `192.168.4.1`)
+4. Enter your WiFi credentials and Signal K server details
+5. Give your device a meaningful hostname (e.g., "EngineMonitor")
+6. Click "Save" - the device will reboot and connect to your network
+
+### Signal K Server Authorization
+
+1. The device will automatically discover your Signal K server via mDNS
+2. Log in to your Signal K server admin interface
+3. Navigate to "Security" -> "Access Requests"
+4. Approve the pending request from your device
+5. Ensure "Read/Write" permissions are granted
+
+### Sensor Mapping
+
+If using multiple temperature sensors:
+
+1. Navigate to the device's web interface (use its IP address or hostname)
+2. Go to the configuration page
+3. Identify each sensor by warming it and observing which reading increases
+4. Adjust the OneWire addresses in the configuration to match your physical setup
+
+## Signal K Paths
+
+The controller reports data to the following Signal K paths:
+
+### Engine Data
+- `propulsion.main.coolantTemperature` - Engine coolant temperature (K)
+- `propulsion.main.seaWaterInTemperature` - Seawater intake temperature (K)
+- `propulsion.main.seaWaterOutTemperature` - Seawater output temperature (K)
+- `propulsion.main.revolutions` - Engine RPM (rev/s)
+
+### System Data
+- `sensors.sensesp.systemhz` - System update frequency
+- `sensors.sensesp.uptime` - Device uptime
+- `sensors.sensesp.freemem` - Free memory
+- `sensors.sensesp.ipaddr` - IP address
+- `sensors.sensesp.wifisignal` - WiFi signal strength
+
+For more Signal K paths, visit the [Signal K specification](https://signalk.org/specification/1.4.0/doc/vesselsBranch.html).
+
+## Project Structure
+
+```
+boat.engine-controller/
+├── src/
+│   ├── Main.cpp              # Main application code
+│   ├── onewire_helper.cpp    # OneWire sensor helper functions
+│   └── onewire_helper.h      # OneWire sensor helper header
+├── include/
+│   └── onewire_helper.h      # Public header files
+├── lib/                      # Private libraries
+├── examples/
+│   └── onewire_temperature/  # Example documentation and images
+├── ci/                       # Continuous Integration files
+├── test/                     # Unit tests
+├── platformio.ini            # PlatformIO configuration
+├── library.json              # Library metadata
+├── LICENSE                   # Apache 2.0 License
+└── README.md                 # This file
+```
+
+## Dependencies
+
+This project uses the following libraries (automatically managed by PlatformIO):
+
+- **SensESP** (^3.1.1) - Universal Signal K sensor framework
+- **OneWire** (^3.0.1) - OneWire protocol implementation
+- **ESP32 Arduino Core** (^6.9.0) - ESP32 Arduino framework
+
+## Monitoring and Debugging
+
+### Serial Monitor
+
+View real-time logs:
+```bash
+pio device monitor
+```
+
+Or use the PlatformIO "Monitor" button in VS Code.
+
+### Common Log Messages
+
+```
+(I) (DallasTemperatureSensors) Found OneWire sensor 10:d0:87:92:01:08:00:9e
+(I) Connected to wifi, SSID: YourNetwork
+(I) IP address of Device: 192.168.1.100
+(I) SignalK server has been found at address 192.168.1.50:3000
+```
+
+## Troubleshooting
+
+### Device Not Creating Access Point
+- Ensure the device is powered correctly (5V)
+- Press and hold the boot button during power-up to force AP mode
+- Check serial monitor for error messages
+
+### Cannot Connect to WiFi
+- Verify WiFi credentials are correct
+- Ensure your WiFi network is 2.4GHz (ESP32 doesn't support 5GHz)
+- Check that WiFi signal strength is adequate
+
+### Sensors Not Detected
+- Verify OneWire sensor connections (VCC, GND, Data)
+- Check that 4.7kΩ pull-up resistor is installed on data line
+- Maximum recommended wire length is 10 meters
+
+### No Data in Signal K
+- Verify Signal K server is running
+- Check that access request has been approved
+- Ensure correct Signal K paths are configured
+- Review device logs for connection errors
+
+### RPM Reading Incorrect
+- Calibrate the frequency multiplier in the web configuration
+- Verify RPM sensor is triggering correctly
+- Check that INPUT_PULLUP is appropriate for your sensor type
+
+## Development
+
+### Building for Different Boards
+
+Edit `platformio.ini` to change the target board:
+
+```ini
+[env:your-board]
+extends = pioarduino, common
+board = your-board-name
+upload_protocol = esptool
+```
+
+### Custom Builds
+
+For continuous integration testing, see files in the `ci/` directory.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Built on the excellent [SensESP](https://github.com/SignalK/SensESP) framework
+- Integrates with [Signal K](https://signalk.org/), the open-source marine data standard
+- Thanks to the ESP32 and Arduino communities
+
+## Support
+
+- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/ihavn1/boat.engine-controller/issues)
+- **Documentation**: See the [examples](examples/) directory for detailed guides
+- **Signal K**: Visit [Signal K documentation](https://signalk.org/) for more information
+
+## Version History
+
+- **3.0.2** - Current release
+  - Updated dependencies
+  - Improved documentation
+  - Enhanced configuration options
+
+---
+
+**Note**: This project is designed for marine engine monitoring. Always use appropriate marine-grade components and follow safe installation practices when installing electronics on your vessel.

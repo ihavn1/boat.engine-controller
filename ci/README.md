@@ -1,4 +1,4 @@
-# CI directory contents
+# CI Directory Contents
 
-This directory contains files required for running the Continuous Integration tests in GitHub.
+This directory contains files required for running the Continuous Integration tests for the boat.engine-controller project in GitHub.
 It is not required for other uses and should be ignored unless you want to modify the CI functionality.

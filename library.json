@@ -1,21 +1,16 @@
 {
-    "name": "OneWire",
-    "keywords": "OneWire, SensESP, Signal K, marine, boat, sensor, hardware, embedded, device",
-    "description": "OneWire temperature device support for the SensESP sensor framework",
+    "name": "boat.engine-controller",
+    "keywords": "SensESP, Signal K, marine, boat, sensor, hardware, embedded, device, engine, temperature, RPM",
+    "description": "Boat engine controller with temperature and RPM monitoring for the SensESP sensor framework",
     "repository": {
         "type": "git",
-        "url": "https://github.com/SensESP/OneWire.git"
+        "url": "https://github.com/ihavn1/boat.engine-controller.git"
     },
     "authors": [
         {
-            "name": "Matti Airas",
-            "email": "mairas@iki.fi",
-            "url": "https://github.com/mairas/",
+            "name": "ihavn1",
+            "url": "https://github.com/ihavn1/",
             "maintainer": true
-        },
-        {
-            "name": "Brian Smith",
-            "url": "https://github.com/ba58smith/"
         }
     ],
     "dependencies": [
